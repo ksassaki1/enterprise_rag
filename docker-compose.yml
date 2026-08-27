@@ -1,0 +1,106 @@
+# Sobe a plataforma inteira: qdrant + ollama + api + dashboard.
+#
+#   docker compose up -d
+#   docker compose --profile setup run --rm ollama-pull   # baixa o modelo
+#   docker compose exec api python scripts/ingest.py ./datasets/sample_documents
+#
+# Tudo local, sem nenhuma dependencia de nuvem paga.
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    container_name: erag-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: erag-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    # Para usar GPU NVIDIA, descomente:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # Servico de setup: baixa o modelo uma vez e sai.
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["ollama pull ${RAG_OLLAMA_MODEL:-qwen2.5:7b-instruct}"]
+    profiles: ["setup"]
+
+  api:
+    build: .
+    container_name: erag-api
+    ports:
+      - "8000:8000"
+    environment:
+      RAG_VECTOR_BACKEND: qdrant
+      RAG_QDRANT_URL: http://qdrant:6333
+      RAG_LLM_BACKEND: ollama
+      RAG_OLLAMA_URL: http://ollama:11434
+      RAG_OLLAMA_MODEL: ${RAG_OLLAMA_MODEL:-qwen2.5:7b-instruct}
+      RAG_EMBEDDING_BACKEND: sentence-transformers
+      RAG_DENSE_MODEL: ${RAG_DENSE_MODEL:-intfloat/multilingual-e5-small}
+      RAG_RERANKER_BACKEND: cross-encoder
+      RAG_DATA_DIR: /app/data
+      RAG_CATALOG_PATH: /app/data/catalog.sqlite3
+      RAG_LOG_JSON: "true"
+      RAG_ENVIRONMENT: docker
+    volumes:
+      - ./data:/app/data
+      - ./datasets:/app/datasets
+      - model_cache:/models
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    container_name: erag-dashboard
+    command:
+      ["streamlit", "run", "apps/dashboard/app.py",
+       "--server.port=8501", "--server.address=0.0.0.0"]
+    ports:
+      - "8501:8501"
+    environment:
+      RAG_API_URL: http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  ollama_models:
+  model_cache:

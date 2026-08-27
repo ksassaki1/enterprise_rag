@@ -1,0 +1,78 @@
+name: RAG Evaluation
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "datasets/**"
+      - "scripts/**"
+      - "reports/baseline.json"
+      - ".github/workflows/evaluation.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+# O portao de regressao: o PR roda o golden dataset e compara com o baseline
+# versionado. Se Recall@10 (ou accuracy, ou P95) cair alem da tolerancia, o
+# job falha -- mudanca de chunk_size deixa de ser "achismo" e passa a ser
+# medida antes do merge.
+env:
+  RAG_VECTOR_BACKEND: memory
+  RAG_EMBEDDING_BACKEND: hashing
+  RAG_RERANKER_BACKEND: lexical
+  RAG_LLM_BACKEND: echo
+  RAG_LOG_LEVEL: WARNING
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -e ".[dev]"
+
+      - name: Indexar documentos de exemplo
+        run: python scripts/ingest.py ./datasets/sample_documents
+
+      - name: Avaliar e comparar com o baseline
+        id: evaluate
+        run: |
+          python scripts/evaluate.py \
+            --baseline reports/baseline.json \
+            --output reports/evaluation.json \
+            --markdown reports/regression.md
+
+      - name: Comentar o resultado no PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'reports/regression.md';
+            if (!fs.existsSync(path)) return;
+            const body = [
+              '## RAG Evaluation',
+              '',
+              fs.readFileSync(path, 'utf8'),
+              '',
+              `Status: ${{ steps.evaluate.outcome }}`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-report
+          path: reports/

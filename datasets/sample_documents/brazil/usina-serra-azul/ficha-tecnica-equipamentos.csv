@@ -1,0 +1,9 @@
+tag,equipamento,fabricante,potencia_mw,ano_instalacao,status
+UHE-SRA-01-UG-01,Turbina Francis eixo vertical,Fabricante Alfa,212.5,2019,operacao
+UHE-SRA-01-UG-02,Turbina Francis eixo vertical,Fabricante Alfa,212.5,2019,operacao
+UHE-SRA-01-UG-03,Turbina Francis eixo vertical,Fabricante Alfa,212.5,2019,operacao
+UHE-SRA-01-UG-04,Turbina Francis eixo vertical,Fabricante Alfa,212.5,2019,manutencao
+UHE-SRA-01-TR-01,Transformador elevador 15.5/230 kV,Fabricante Beta,230.0,2019,operacao
+UHE-SRA-01-TR-02,Transformador elevador 15.5/230 kV,Fabricante Beta,230.0,2019,operacao
+UHE-SRA-01-CP-01,Comporta vagao do vertedouro,Fabricante Gama,,2018,operacao
+UHE-SRA-01-CP-02,Comporta vagao do vertedouro,Fabricante Gama,,2018,operacao
