@@ -41,7 +41,7 @@ full = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-user/enterprise-rag-platform"
+Homepage = "https://github.com/ksassaki1/enterprise_rag"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

@@ -1,7 +1,7 @@
 # Enterprise RAG Platform
 
-[![CI](https://github.com/your-user/enterprise-rag-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/your-user/enterprise-rag-platform/actions/workflows/ci.yml)
-[![RAG Evaluation](https://github.com/your-user/enterprise-rag-platform/actions/workflows/evaluation.yml/badge.svg)](https://github.com/your-user/enterprise-rag-platform/actions/workflows/evaluation.yml)
+[![CI](https://github.com/ksassaki1/enterprise_rag/actions/workflows/ci.yml/badge.svg)](https://github.com/ksassaki1/enterprise_rag/actions/workflows/ci.yml)
+[![RAG Evaluation](https://github.com/ksassaki1/enterprise_rag/actions/workflows/evaluation.yml/badge.svg)](https://github.com/ksassaki1/enterprise_rag/actions/workflows/evaluation.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -139,8 +139,8 @@ rodar o pipeline inteiro, com avaliação, em CI gratuito ([ADR 0005](docs/adr/0
 ### Opção A — Docker Compose (completo)
 
 ```bash
-git clone https://github.com/your-user/enterprise-rag-platform.git
-cd enterprise-rag-platform
+git clone https://github.com/ksassaki1/enterprise_rag.git
+cd enterprise_rag
 cp .env.example .env
 
 docker compose up -d --build
@@ -433,7 +433,7 @@ de negócio.
 ## Estrutura do repositório
 
 ```
-enterprise-rag-platform/
+enterprise_rag/
 ├── apps/
 │   ├── api/main.py                 FastAPI: /ask /search /documents /metrics
 │   └── dashboard/app.py            Streamlit operacional
