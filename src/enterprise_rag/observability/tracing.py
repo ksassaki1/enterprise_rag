@@ -13,14 +13,14 @@ from __future__ import annotations
 import time
 import uuid
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
 
 from enterprise_rag.config.logging import current_trace_id
 
-_current_trace: ContextVar["Trace | None"] = ContextVar("_current_trace", default=None)
+_current_trace: ContextVar[Trace | None] = ContextVar("_current_trace", default=None)
 
 
 @dataclass
@@ -132,8 +132,6 @@ def _end_otel_span(otel_span: Any | None, span: Span) -> None:
     if otel_span is None:
         return
     for key, value in span.attributes.items():
-        try:
+        with suppress(Exception):
             otel_span.set_attribute(key, value)
-        except Exception:
-            pass
     otel_span.end()

@@ -15,7 +15,7 @@ env/
 htmlcov/
 data/*
 !data/.gitkeep
-storage/
+/storage/
 *.sqlite3
 *.db
 .qdrant/

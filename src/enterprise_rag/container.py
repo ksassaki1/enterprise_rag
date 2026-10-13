@@ -51,7 +51,10 @@ class Container:
     orchestrator: RAGOrchestrator
 
     def close(self) -> None:
-        self.catalog.close()
+        try:
+            self.catalog.close()
+        finally:
+            self.store.close()
 
     def describe(self) -> dict[str, object]:
         """Configuração efetiva. Vai para `/health` e para o cabeçalho dos

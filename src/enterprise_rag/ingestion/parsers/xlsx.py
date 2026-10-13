@@ -24,19 +24,16 @@ class TabularParser(DocumentParser):
     extensions = (".xlsx", ".xlsm", ".csv")
 
     def parse(self, path: Path) -> list[ParsedBlock]:
-        if path.suffix.lower() == ".csv":
-            sheets = {"csv": _read_csv(path)}
-        else:
-            sheets = _read_xlsx(path)
+        sheets = {"csv": _read_csv(path)} if path.suffix.lower() == ".csv" else _read_xlsx(path)
 
         blocks: list[ParsedBlock] = []
         for sheet_name, rows in sheets.items():
-            rows = [row for row in rows if any(str(cell).strip() for cell in row)]
-            if not rows:
+            nonempty_rows = [row for row in rows if any(str(cell).strip() for cell in row)]
+            if not nonempty_rows:
                 continue
-            header = [str(cell).strip() for cell in rows[0]]
-            for start in range(1, len(rows), ROWS_PER_BLOCK):
-                window = rows[start : start + ROWS_PER_BLOCK]
+            header = [str(cell).strip() for cell in nonempty_rows[0]]
+            for start in range(1, len(nonempty_rows), ROWS_PER_BLOCK):
+                window = nonempty_rows[start : start + ROWS_PER_BLOCK]
                 lines = ["| " + " | ".join(header) + " |"]
                 lines.append("| " + " | ".join("---" for _ in header) + " |")
                 for row in window:

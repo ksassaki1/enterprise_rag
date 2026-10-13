@@ -21,9 +21,8 @@ def test_trace_registra_spans_por_estagio():
 
 
 def test_span_captura_excecao_sem_engolir():
-    with new_trace("ask") as trace:
-        with pytest.raises(ValueError), trace.span("generation"):
-            raise ValueError("falhou")
+    with new_trace("ask") as trace, pytest.raises(ValueError), trace.span("generation"):
+        raise ValueError("falhou")
     assert trace.spans[0].error is not None
 
 

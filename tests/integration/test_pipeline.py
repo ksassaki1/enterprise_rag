@@ -56,11 +56,11 @@ def test_metadados_de_diretorio_e_frontmatter_chegam_ao_chunk(
     chunks = [
         chunk
         for chunk in indexed_container.store.iter_chunks()
-        if "serra-azul" in chunk.document_id
+        if "serra-azul" in chunk.document_id and chunk.file_type == "md"
     ]
     assert chunks
-    assert chunks[0].metadata["country"] == "Brazil"
-    assert chunks[0].metadata["project"] == "Usina Serra Azul"
+    assert all(chunk.metadata["country"] == "Brazil" for chunk in chunks)
+    assert all(chunk.metadata["project"] == "Usina Serra Azul" for chunk in chunks)
 
 
 def test_remocao_apaga_chunks_catalogo_e_estatisticas(indexed_container: Container):

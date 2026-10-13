@@ -162,11 +162,14 @@ class EchoLLM:
 
 
 def _split_prompt(user: str) -> tuple[str, str]:
-    context, _, tail = user.partition("---")
-    question = tail.split("Pergunta:", 1)[-1].strip() if "Pergunta:" in tail else tail.strip()
-    if not context.strip() and "Pergunta:" in user:
-        question = user.split("Pergunta:", 1)[-1].strip()
-    return context.replace("Contexto:", "", 1), question
+    # A linha separadora pode aparecer também em tabelas Markdown do contexto.
+    # Só o último delimitador separa as fontes da pergunta; a instrução final
+    # não deve entrar nos termos usados para escolher uma frase da resposta.
+    context, separator, tail = user.rpartition("\n\n---\n\n")
+    if not separator:
+        context, tail = "", user
+    question = tail.partition("Pergunta:")[2].split("\n\n", 1)[0].strip()
+    return context.removeprefix("Contexto:").strip(), question
 
 
 def _iter_sources(context: str) -> list[tuple[int, str]]:

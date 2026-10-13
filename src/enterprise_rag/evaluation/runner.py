@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import statistics
-import time
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -98,7 +97,6 @@ def run_evaluation(
     search_k = max(top_k or container.settings.top_k_final, 10)
 
     for index, item in enumerate(items, start=1):
-        started = time.perf_counter()
         search = container.orchestrator.search(
             item.question, top_k=search_k, filters=item.filters or None
         )
